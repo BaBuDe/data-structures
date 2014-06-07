@@ -3,14 +3,13 @@ var makeLinkedList = function(){
   list.head = null;
   list.tail = null;
   var node;
-  // var previousNode;
+  
 
   list.addToTail = function(value){
    // create new node, add node to tail, make new node tail, set previous tail's next 
    // to equal current tail
     
     node = makeNode(value);
-    // debugger;
     if (list.head === null) {
       list.tail = node;
       list.head = node;
@@ -29,7 +28,6 @@ var makeLinkedList = function(){
 
   list.contains = function(target, node){
     var node = node || list.head;
-    debugger;
     if (node['value'] === target) {
       return true;
     } else if (node.next !== null) {
@@ -39,21 +37,6 @@ var makeLinkedList = function(){
   };
   return list;
 };
-
-// LinkedList.prototype.search = function(searchValue, currentNode) {
-//     var currentNode = currentNode || this.head;
-//     if(currentNode.value == searchValue) {
-//         console.log("true");
-//         return true;
-//     } else if(currentNode.next !== null) {
-//         return this.search(searchValue, currentNode.next);
-//     }
-//     console.log("not found");
-//     return false;
-// };
-
-
-
 
 
 
