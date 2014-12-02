@@ -2,99 +2,87 @@ var HashTable = function(){
   this._limit = 8;
   this._storage = makeLimitedArray(this._limit);
   this._size = 0;
-  // this.myHash = [];
 };
 
 HashTable.prototype.insert = function(key, value){
   var index = getIndexBelowMaxForKey(key, this._limit);
- 
-  this._storage[index] = value;
-  // var newArray = this._storage.get(index);
-  this._size++;
-  //create a variable R that will retrieve the contents at index using this._storage.get
-  //loop through keys of R
-  //then look at the key-value string pair arrays 
-  //if the first value in the key-value string pairs equals the key, set the second string to the value passed in
-  //if the key is not in R, then push [key, value] to R
+
+  var tupleArray = this._storage.get(index);
+
+  if (!tupleArray) {
+    tupleArray = [];
+    this._storage.set(index, tupleArray);
+  }
+
+  var pairFound = false;
+
+  for (var i = 0; i < tupleArray.length; i++) {
+    var tuple = tupleArray[i];
+
+    if (tuple[0] === key) {
+      tuple[1] = value;
+      pairFound = true;
+      break;
+    }
+  }
+
+  if (!pairFound) {
+    tupleArray.push([key, value]);
+    this._size++;
+    if (this._size > 0.75 * this._limit)  {
+      this._resize(this._limit*2);
+    }
+  }
 };
 
 HashTable.prototype.retrieve = function(key){
   var index = getIndexBelowMaxForKey(key, this._limit);
 
-  return this._storage[index];
-  //takes key and limit to find key's bucket
-  //within bucket, search the keys for key
-  //return the value at key
+  var tupleArray = this._storage.get(index) || [];
+
+  for (var j = 0; j < tupleArray.length; j++) {
+    var tuple = tupleArray[j];
+    if (tuple[0] === key) {
+      return tuple[1];
+    }
+  }
+  return null;
 
 };
 
 HashTable.prototype.remove = function(key){
   var index = getIndexBelowMaxForKey(key, this._limit);
-  this._storage[index] = null;
-  // this._size--;
+  var tupleArray = this._storage.get(index) || [];
 
+  for (var j = 0; j < tupleArray.length; j++) {
+    var tuple = tupleArray[j];
+    if (tuple[0] === key) {
+      tupleArray.splice(j, 1);
+      this._size--;
+      if (this._size < this._limit * 0.25) {
+        this.resize(this._limit/2);
+      }
+      return tuple[1];
+    }
+  }
+  return null;
 };
 
-// var makeLinkedList = function(){
-//   var list = {};
-//   list.head = null;
-//   list.tail = null;
-//   var node;
-  
+HashTable.prototype.resize = function(newSize){
+  var oldStorage = this._storage;
+  this._storage = makeLimitedArray(newSize);
+  this._limit = newSize;
+  this._size = 0;
 
-//   list.addToTail = function(value){
-//    // create new node, add node to tail, make new node tail, set previous tail's next 
-//    // to equal current tail
-    
-//     node = makeNode(value);
-//     if (list.head === null) {
-//       list.tail = node;
-//       list.head = node;
-//     } else {
-//     list.tail.next = node;
-//     } 
-
-//     list.tail = node;
-//   };
-
-//   list.removeHead = function(){
-//     var removeIt = list.head['value'];
-//     list.head = list.head.next;
-//     return removeIt;
-//   };
-
-//   list.contains = function(target, node){
-//     var node = node || list.head;
-//     if (node['value'] === target) {
-//       return true;
-//     } else if (node.next !== null) {
-//       return list.contains(target, node.next);
-//     }
-//     return false;
-//   };
-//   return list;
-// };
-
-
-
-// var makeNode = function(value){
-//   var node = {};
-
-//   node.value = value;
-//   node.next = null;
-
-//   return node;
-// };
-
-
-// HashTable.prototype.resize = function(newSize)){
-//   //create new limitedArray with new size when storage array's size > limit * 0.75;
-			//loop back through all the keys and re-run the hash functions using the new length
-			//
-//   if (this._size >= this._limit) {
-//     this._limit = this._limit * 2;
-//   }
-// };
+  oldStorage.each(function(tupleArray) {
+    if (tupleArray === undefined) {return; }
+    for (var i = 0; i < tupleArray.length; i++) {
+      var tuple = tupleArray[i];
+      this.insert(tuple[0], tuple[1]);
+    }
+  }.bind(this));
+ 
+};
 
 /*
  * Complexity: What is the time complexity of the above functions?
